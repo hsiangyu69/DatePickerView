@@ -56,7 +56,7 @@ public class YearAdapter extends RecyclerView.Adapter<YearAdapter.YearViewHolder
     @Override
     public void onBindViewHolder(YearAdapter.YearViewHolder holder, int position) {
         holder.textView.setText(dataSource.get(position));
-        if (isSelect(position)) {
+        if (isHighlight(position)) {
             holder.textView.setTextColor(ContextCompat.getColor(holder.textView.getContext(), R.color.colorBlack));
         } else {
             holder.textView.setTextColor(ContextCompat.getColor(holder.textView.getContext(), R.color.colorGray));
@@ -78,9 +78,9 @@ public class YearAdapter extends RecyclerView.Adapter<YearAdapter.YearViewHolder
     }
 
     /**
-     * Decide is selected or not
+     * Decide is highlight item (in the center) or not
      */
-    private boolean isSelect(int position) {
+    private boolean isHighlight(int position) {
         return mHighlightPosition == position;
     }
 

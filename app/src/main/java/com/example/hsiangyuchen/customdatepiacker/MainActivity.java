@@ -42,8 +42,13 @@ public class MainActivity extends AppCompatActivity implements DatePickerView.Da
 
 
     private void buildAlertDialog() {
-        datePickerView = new DatePickerView(this, DatePickerView.DATEPICKERVIEW_TYPE_BIRTHDAYPICKER);
-        datePickerView.setUnixTime(System.currentTimeMillis());
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, 2000);
+        calendar.set(Calendar.MONTH, 11);
+        calendar.set(Calendar.DAY_OF_MONTH, 21);
+
+        datePickerView = new DatePickerView(this, DatePickerView.DATEPICKERVIEW_TYPE_CARDEXPIRYPICKER
+                , System.currentTimeMillis(),0, 0);
         alertDialog = new AlertDialog.Builder(this)
                 .setView(datePickerView)
                 .create();

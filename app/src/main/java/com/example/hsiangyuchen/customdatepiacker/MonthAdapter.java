@@ -57,7 +57,7 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.MonthViewHol
     public void onBindViewHolder(MonthViewHolder holder, int position) {
 
         holder.textView_month.setText(dataSource.get(position));
-        if (isSelect(position)) {
+        if (isHighlight(position)) {
             holder.textView_month.setTextColor(ContextCompat.getColor(holder.textView_month.getContext(), R.color.colorBlack));
         } else {
             holder.textView_month.setTextColor(ContextCompat.getColor(holder.textView_month.getContext(), R.color.colorGray));
@@ -79,9 +79,9 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.MonthViewHol
     }
 
     /**
-     * Decide is selected or not
+     * Decide is highlight item (in the center) or not
      */
-    private boolean isSelect(int position) {
+    private boolean isHighlight(int position) {
         return mHighlightItemPosition == position;
     }
 
@@ -93,6 +93,14 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.MonthViewHol
         int offset = ITEM_NUM / 2;
         for (int i = position - offset; i <= position + offset; ++i)
             notifyItemChanged(i);
+    }
+
+    /**
+     * Set date date soure, because the select month will change
+     */
+    public void setDateSource(ArrayList<String> dataSource) {
+        this.dataSource = dataSource;
+        notifyDataSetChanged();
     }
 
     /**

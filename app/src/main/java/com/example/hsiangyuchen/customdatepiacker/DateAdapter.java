@@ -57,7 +57,7 @@ public class DateAdapter extends RecyclerView.Adapter<DateAdapter.DayViewHolder>
     @Override
     public void onBindViewHolder(DateAdapter.DayViewHolder holder, int position) {
         holder.textView_date.setText(dataSource.get(position));
-        if (isSelect(position)) {
+        if (isHighlight(position)) {
             holder.textView_date.setTextColor(ContextCompat.getColor(holder.textView_date.getContext(), R.color.colorBlack));
         } else {
             holder.textView_date.setTextColor(ContextCompat.getColor(holder.textView_date.getContext(), R.color.colorGray));
@@ -78,9 +78,9 @@ public class DateAdapter extends RecyclerView.Adapter<DateAdapter.DayViewHolder>
     }
 
     /**
-     * Decide is selected or not
+     * Decide is highlight item (in the center) or not
      */
-    private boolean isSelect(int position) {
+    private boolean isHighlight(int position) {
         return mHighlightItemPosition == position;
     }
 
