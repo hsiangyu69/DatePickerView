@@ -22,7 +22,7 @@ public class YearAdapter extends RecyclerView.Adapter<YearAdapter.YearViewHolder
     private int recyclerviewHeight;
 
     // Flag
-    private int mHighlightPosition = 1;
+    private int mHighlightItemPosition = 1;
 
     // Date source
     private ArrayList<String> dataSource;
@@ -81,14 +81,14 @@ public class YearAdapter extends RecyclerView.Adapter<YearAdapter.YearViewHolder
      * Decide is highlight item (in the center) or not
      */
     private boolean isHighlight(int position) {
-        return mHighlightPosition == position;
+        return mHighlightItemPosition == position;
     }
 
     /**
      * Set the highlight item
      */
     public void setHighlightItem(int position) {
-        mHighlightPosition = position;
+        mHighlightItemPosition = position;
         int offset = ITEM_NUM / 2;
         for (int i = position - offset; i <= position + offset; ++i)
             notifyItemChanged(i);
@@ -97,8 +97,8 @@ public class YearAdapter extends RecyclerView.Adapter<YearAdapter.YearViewHolder
     /**
      * get highlight item postion
      */
-    public int getHighlightItem() {
-        return mHighlightPosition;
+    public String getHighlightItem() {
+        return dataSource.get(mHighlightItemPosition);
     }
 
 

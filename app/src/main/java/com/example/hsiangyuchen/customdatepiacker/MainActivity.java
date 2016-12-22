@@ -13,6 +13,7 @@ import android.widget.DatePicker;
 import android.widget.TextView;
 
 import java.text.DateFormatSymbols;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
@@ -43,15 +44,17 @@ public class MainActivity extends AppCompatActivity implements DatePickerView.Da
 
     private void buildAlertDialog() {
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, 2000);
-        calendar.set(Calendar.MONTH, 11);
-        calendar.set(Calendar.DAY_OF_MONTH, 21);
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
+        calendar.set(Calendar.MONTH, 4);
+        calendar.set(Calendar.DAY_OF_MONTH, 22);
 
         datePickerView = new DatePickerView(this, DatePickerView.DATEPICKERVIEW_TYPE_CARDEXPIRYPICKER
-                , System.currentTimeMillis(),0, 0);
+                , System.currentTimeMillis(), 0, 0);
         alertDialog = new AlertDialog.Builder(this)
                 .setView(datePickerView)
                 .create();
+
 
     }
 
@@ -70,7 +73,10 @@ public class MainActivity extends AppCompatActivity implements DatePickerView.Da
 
     @Override
     public void onDone() {
-        long dateDateUnixTime = datePickerView.getSelectDateUnixTime();
+        long dateDateUnixTime = 0;
+
+        dateDateUnixTime = datePickerView.getSelectDateUnixTime();
+
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(dateDateUnixTime);
 

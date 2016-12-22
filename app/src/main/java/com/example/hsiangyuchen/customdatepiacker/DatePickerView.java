@@ -98,12 +98,8 @@ public class DatePickerView extends RelativeLayout {
     private ArrayList<String> yearArrayList = new ArrayList<>();
 
     // flag
-    private int nowDateMiddlePostion;
+    private int nowDateMiddlePosition;
 
-
-//    TODO default birthdaymax ->Today, bithdaymin ->150
-//    TODO default creditcardmax -> this year +10 , min -> today
-//    TODO if max =0 default, min= 0 defalut
 
     /* ------------------------------ Interface */
     public interface DatePickerListener {
@@ -180,14 +176,14 @@ public class DatePickerView extends RelativeLayout {
         switch (mDatePickerViewType) {
             case DATEPICKERVIEW_TYPE_BIRTHDAYPICKER:
                 yearAdapter = new YearAdapter(generateYearDataSourceForBirthdayDatePicker(), dpToPx(120));
-                monthAdapter = new MonthAdapter(generateMonthDataSourseForBirthdayDatePicker(), dpToPx(120));
+                monthAdapter = new MonthAdapter(generateMonthDataSourseForBirthdayDatePicker(selectYear), dpToPx(120));
                 break;
             case DATEPICKERVIEW_TYPE_CARDEXPIRYPICKER:
                 relativeLayout_date.setVisibility(GONE);
                 textView_date.setVisibility(GONE);
                 textView_slash.setVisibility(VISIBLE);
                 yearAdapter = new YearAdapter(generateYearDataSourceForCardExpiryDatePicker(), dpToPx(120));
-                monthAdapter = new MonthAdapter(generateMonthDataSourseForCardExpiryDatePicker(selectYear), dpToPx(120));
+                monthAdapter = new MonthAdapter(generateMonthDataSourseForCardExpiryDatePicker(Integer.parseInt(getWeekYearFormat(selectYear))), dpToPx(120));
                 break;
 
         }
@@ -271,7 +267,8 @@ public class DatePickerView extends RelativeLayout {
                     //  Month is calculated form 0, so need to -1, and when state is idle, the date data source need to refresh
                     dateAdapter.setDateSource(generateDateDataSource(Integer.parseInt(yearArrayList.get(getYearMiddlePostion())), getMonthMiddlePosition() - 1));
                     refreshDateMiddlePosition();
-                    textView_month.setText(String.valueOf(monthArrayList.get(getMonthMiddlePosition())));
+                    textView_month.setText(monthAdapter.getHighlightItem());
+
 
                 }
             }
@@ -296,7 +293,7 @@ public class DatePickerView extends RelativeLayout {
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     dateAdapter.setHighlightItem(getDateMiddlePostion());
                     ((LinearLayoutManager) recyclerView_date.getLayoutManager()).scrollToPositionWithOffset(getDateScrollPosition(), 0);
-                    textView_date.setText(String.valueOf((dateArrayList.get(getDateMiddlePostion()))));
+                    textView_date.setText(dateAdapter.getHighlightItem());
 
                 }
             }
@@ -309,12 +306,21 @@ public class DatePickerView extends RelativeLayout {
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     yearAdapter.setHighlightItem(getYearMiddlePostion());
                     ((LinearLayoutManager) recyclerView_year.getLayoutManager()).scrollToPositionWithOffset(getYearScrollPosition(), 0);
-                    dateAdapter.setDateSource(generateDateDataSource(Integer.parseInt(yearArrayList.get(getYearMiddlePostion())), getMonthMiddlePosition() - 1));
-                    refreshDateMiddlePosition();
-                    if (mDatePickerViewType == DATEPICKERVIEW_TYPE_CARDEXPIRYPICKER) {
-                        monthAdapter.setDateSource(generateMonthDataSourseForCardExpiryDatePicker(getYearMiddlePostion()));
+                    switch (mDatePickerViewType) {
+                        case DATEPICKERVIEW_TYPE_BIRTHDAYPICKER:
+                            monthAdapter.setDateSource(generateMonthDataSourseForBirthdayDatePicker(Integer.parseInt(yearArrayList.get(getYearMiddlePostion()))));
+                            dateAdapter.setDateSource(generateDateDataSource(Integer.parseInt(yearArrayList.get(getYearMiddlePostion())), getMonthMiddlePosition() - 1));
+                            refreshDateMiddlePosition();
+                            textView_year.setText(yearAdapter.getHighlightItem());
+                            break;
+                        case DATEPICKERVIEW_TYPE_CARDEXPIRYPICKER:
+                            String nowSelectMonth = monthArrayList.get(getMonthMiddlePosition());
+                            monthAdapter.setDateSource(generateMonthDataSourseForCardExpiryDatePicker(Integer.parseInt(yearArrayList.get(getYearMiddlePostion()))));
+                            refreshMonthMiddlePositionForCardExpiryDatePicker(nowSelectMonth);
+                            textView_year.setText(yearAdapter.getHighlightItem());
+                            break;
                     }
-                    textView_year.setText(String.valueOf((yearArrayList.get(getYearMiddlePostion()))));
+
 
                 }
             }
@@ -366,30 +372,43 @@ public class DatePickerView extends RelativeLayout {
 
     /**
      * Generate Month Data Source For BirthdayDatePicker
+     *
+     * @param selectYear the year you select
      */
-    public ArrayList<String> generateMonthDataSourseForBirthdayDatePicker() {
+    public ArrayList<String> generateMonthDataSourseForBirthdayDatePicker(int selectYear) {
         DateFormatSymbols dateFormatSymbols = new DateFormatSymbols(Locale.getDefault());
         monthArrayList.clear();
         String[] monthArray = dateFormatSymbols.getShortMonths();
-        for (int i = 0; i < monthArray.length + DUMMY_DATA_COUNT; i++) {
+        int monthCount = 0;
+        if (selectYear == birthdayMaxYear) {
+            monthCount = todayMonth + 1;
+        } else {
+            monthCount = MAX_MONTH_COUNT;
+        }
+        for (int i = 0; i < monthCount + DUMMY_DATA_COUNT; i++) {
             if (i == 0) {
                 monthArrayList.add(i, DUMMY_DATA);
-            } else if (i == monthArray.length + 1) {
+            } else if (i == monthCount + DUMMY_DATA_COUNT - 1) {
                 monthArrayList.add(i, DUMMY_DATA);
             } else {
                 monthArrayList.add(i, monthArray[i - 1]);
             }
         }
+
+
         return monthArrayList;
     }
 
     /**
      * Generate Month Data Source For CardExpiry
+     *
+     * @param selectYear the year you select, and the format is weekyear 2016 -> 16
      */
     public ArrayList<String> generateMonthDataSourseForCardExpiryDatePicker(int selectYear) {
         monthArrayList.clear();
         int monthCount = 0;
-        if (selectYear == creditCardMinYear) {
+        // Need to check just in few months
+        if (selectYear == Integer.valueOf(getWeekYearFormat(creditCardMinYear))) {
             monthCount = (MAX_MONTH_COUNT - (todayMonth + 1)) + 1;
             for (int i = 0; i < monthCount + DUMMY_DATA_COUNT; i++) {
                 if (i == 0) {
@@ -397,12 +416,7 @@ public class DatePickerView extends RelativeLayout {
                 } else if (i == monthCount + DUMMY_DATA_COUNT - 1) {
                     monthArrayList.add(i, DUMMY_DATA);
                 } else {
-                    if ((todayMonth + i) / 10 == 0) {
-                        monthArrayList.add(i, String.valueOf("0") + String.valueOf(todayMonth + i));
-                    } else {
-                        monthArrayList.add(i, String.valueOf(todayMonth + i));
-
-                    }
+                    monthArrayList.add(i, getMonthFormatForCardExpiry(todayMonth));
                 }
             }
         } else {
@@ -412,12 +426,9 @@ public class DatePickerView extends RelativeLayout {
                 } else if (i == MAX_MONTH_COUNT + DUMMY_DATA_COUNT - 1) {
                     monthArrayList.add(i, DUMMY_DATA);
                 } else {
-                    if (i / 10 == 0) {
-                        monthArrayList.add(i, String.valueOf("0") + String.valueOf(i));
-                    } else {
-                        monthArrayList.add(i, String.valueOf(i));
+                    //  because dummy data and month is calculated from 0, month need to - 1
+                    monthArrayList.add(i, getMonthFormatForCardExpiry(i - 1));
 
-                    }
 
                 }
             }
@@ -485,24 +496,18 @@ public class DatePickerView extends RelativeLayout {
     /**
      * Generate Year Data Source for CardExpiryDatePicker
      * The year range from this year to this year + 10
-     * TODO ask how to do
      */
     public ArrayList<String> generateYearDataSourceForCardExpiryDatePicker() {
         Calendar calendar = Calendar.getInstance();
-//        calendar.setTimeInMillis(System.currentTimeMillis());
-//        SimpleDateFormat df = new SimpleDateFormat("yy"); // Just the year, with 2 digits
-//        String formattedDate = df.format(Calendar.getInstance().getTime());
         yearArrayList.clear();
-        for (int i = 0; i < 10 + DUMMY_DATA_COUNT; i++) {
+        for (int i = 0; i < (creditCardMaxYear - creditCardMinYear + DUMMY_DATA_COUNT); i++) {
             if (i == 0) {
                 yearArrayList.add(i, DUMMY_DATA);
-            } else if (i == 10 + 1) {
+            } else if (i == creditCardMaxYear - creditCardMinYear + DUMMY_DATA_COUNT - 1) {
                 yearArrayList.add(i, DUMMY_DATA);
             } else {
-                String tempYear = String.valueOf(String.valueOf(calendar.get(Calendar.YEAR) + i - 1));
-//                yearArrayList.add(i, tempYear.substring(2));
-                yearArrayList.add(i, tempYear);
-
+                String weekYear = getWeekYearFormat(calendar.get(Calendar.YEAR) + i - 1);
+                yearArrayList.add(i, weekYear);
 
             }
 
@@ -517,13 +522,30 @@ public class DatePickerView extends RelativeLayout {
      * Set recyclerview sroll to specify date at first
      */
     public void setRecyclerviewScrollToSpecifyDate() {
-        ((LinearLayoutManager) recyclerView_date.getLayoutManager()).scrollToPositionWithOffset(selectDate - 1, 0);
-        dateAdapter.setHighlightItem(selectDate);
-        ((LinearLayoutManager) recyclerView_month.getLayoutManager()).scrollToPositionWithOffset(selectMonth, 0);
-        monthAdapter.setHighlightItem(selectMonth + 1);
-        int yearPos = yearArrayList.indexOf(String.valueOf(selectYear));
-        ((LinearLayoutManager) recyclerView_year.getLayoutManager()).scrollToPositionWithOffset(yearPos - 1, 0);
-        yearAdapter.setHighlightItem(yearPos);
+        switch (mDatePickerViewType) {
+            case DATEPICKERVIEW_TYPE_BIRTHDAYPICKER:
+                ((LinearLayoutManager) recyclerView_date.getLayoutManager()).scrollToPositionWithOffset(selectDate - 1, 0);
+                dateAdapter.setHighlightItem(selectDate);
+                ((LinearLayoutManager) recyclerView_month.getLayoutManager()).scrollToPositionWithOffset(selectMonth, 0);
+                monthAdapter.setHighlightItem(selectMonth + 1);
+                int yearPosistion = yearArrayList.indexOf(String.valueOf(selectYear));
+                ((LinearLayoutManager) recyclerView_year.getLayoutManager()).scrollToPositionWithOffset(yearPosistion - 1, 0);
+                yearAdapter.setHighlightItem(yearPosistion);
+                break;
+            case DATEPICKERVIEW_TYPE_CARDEXPIRYPICKER:
+                // monthArrayList is 01, 02, 03 ..., need to convert selectMonth format
+                // Because month is calculated from 0, the selectMonth + 1
+                String selectMonthStr = getMonthFormatForCardExpiry(selectMonth);
+                int monthPosistion = monthArrayList.indexOf(selectMonthStr);
+                ((LinearLayoutManager) recyclerView_month.getLayoutManager()).scrollToPositionWithOffset(monthPosistion - 1, 0);
+                monthAdapter.setHighlightItem(monthPosistion);
+                int yearPosition = yearArrayList.indexOf(getWeekYearFormat(selectYear));
+                ((LinearLayoutManager) recyclerView_year.getLayoutManager()).scrollToPositionWithOffset(yearPosition - 1, 0);
+                yearAdapter.setHighlightItem(yearPosition);
+                break;
+
+
+        }
 
     }
 
@@ -531,9 +553,24 @@ public class DatePickerView extends RelativeLayout {
      * Set textview_date, text_month, text_year to specify date at first
      */
     public void setDisplayDate() {
-//        textView_year.setText(String.valueOf(selectYear));
-//        textView_month.setText(monthArrayList.get(selectMonth + 1));
-        textView_date.setText(String.valueOf(selectDate));
+        switch (mDatePickerViewType) {
+            case DATEPICKERVIEW_TYPE_BIRTHDAYPICKER:
+                textView_year.setText(String.valueOf(selectYear));
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.MONTH, selectMonth);
+                String monthShort = calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault());
+                int monthPositionForBirthday = monthArrayList.indexOf(monthShort);
+                textView_month.setText(monthArrayList.get(monthPositionForBirthday));
+                textView_date.setText(String.valueOf(selectDate));
+                break;
+            case DATEPICKERVIEW_TYPE_CARDEXPIRYPICKER:
+                textView_year.setText(getWeekYearFormat(selectYear));
+                int monthPositionForCreditCard = monthArrayList.indexOf(getMonthFormatForCardExpiry(selectMonth));
+                textView_month.setText(monthArrayList.get(monthPositionForCreditCard));
+                break;
+
+        }
+
     }
 
     /**
@@ -541,16 +578,28 @@ public class DatePickerView extends RelativeLayout {
      */
     public long getSelectDateUnixTime() {
         Calendar calendar = Calendar.getInstance();
-        // TODO ask how to do is better
-        if (mDatePickerViewType == DATEPICKERVIEW_TYPE_BIRTHDAYPICKER) {
-            calendar.set(Calendar.YEAR, Integer.parseInt(yearArrayList.get(yearAdapter.getHighlightItem())));
-        } else {
-//            TODO simpleDataformat
-            calendar.set(Calendar.YEAR, Integer.parseInt(String.valueOf("20") + yearArrayList.get(yearAdapter.getHighlightItem())));
+        Date date = null;
+        switch (mDatePickerViewType) {
+            case DATEPICKERVIEW_TYPE_BIRTHDAYPICKER:
+                SimpleDateFormat simpleDateFormatForBirthday = new SimpleDateFormat("yyyyMMMdd");
+                try {
+                    date = simpleDateFormatForBirthday.parse(yearAdapter.getHighlightItem() + monthAdapter.getHighlightItem() + dateAdapter.getHighlightItem());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                calendar.setTime(date);
+                break;
+            case DATEPICKERVIEW_TYPE_CARDEXPIRYPICKER:
+                SimpleDateFormat simpleDateFormatForCardExpiry = new SimpleDateFormat("yyMM");
+                try {
+                    date = simpleDateFormatForCardExpiry.parse(yearAdapter.getHighlightItem() + monthAdapter.getHighlightItem());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                calendar.setTime(date);
+                break;
+
         }
-        // Because month is calcuated from 0, need to - 1
-        calendar.set(Calendar.MONTH, monthAdapter.getHighlightItem() - 1);
-        calendar.set(Calendar.DAY_OF_MONTH, (dateAdapter.getHighlightItem()));
         long dateUnixTime = calendar.getTimeInMillis();
         return dateUnixTime;
     }
@@ -562,19 +611,74 @@ public class DatePickerView extends RelativeLayout {
      * and recyclerview_date need to scroll to bottom, and highlight the last date.
      */
     public void refreshDateMiddlePosition() {
-        nowDateMiddlePostion = getDateMiddlePostion();
-        if (nowDateMiddlePostion > dateArrayList.size() - DUMMY_DATA_COUNT) {
+        nowDateMiddlePosition = getDateMiddlePostion();
+        if (nowDateMiddlePosition > dateArrayList.size() - DUMMY_DATA_COUNT) {
             recyclerView_date.scrollToPosition(dateArrayList.size() - 1);
             dateAdapter.setHighlightItem(dateArrayList.size() - DUMMY_DATA_COUNT);
-            nowDateMiddlePostion = dateArrayList.size() - DUMMY_DATA_COUNT;
-            textView_date.setText(String.valueOf(nowDateMiddlePostion));
+            nowDateMiddlePosition = dateArrayList.size() - DUMMY_DATA_COUNT;
+            textView_date.setText(String.valueOf(nowDateMiddlePosition));
         } else {
-            dateAdapter.setHighlightItem(nowDateMiddlePostion);
+            dateAdapter.setHighlightItem(nowDateMiddlePosition);
 
         }
     }
 
 
+    /**
+     * Refresh month middle position for card expiry date picker
+     * When yearupdate, the month need to refresh
+     * For example, if you now select 04/17 , when you scroll year to 16 (the montth just have December),
+     * the new monthArrayList didn't has the month 04, need to scroll to the 12(todayMonth)
+     */
+
+    public void refreshMonthMiddlePositionForCardExpiryDatePicker(String nowSelectMonth) {
+        int monthPosition = monthArrayList.indexOf(nowSelectMonth);
+
+        if (monthPosition != -1) {
+            ((LinearLayoutManager) recyclerView_month.getLayoutManager()).scrollToPositionWithOffset(monthPosition - 1, 0);
+            monthAdapter.setHighlightItem(monthPosition);
+        } else {
+            // monthArrayList is 01, 02, 03 ..., need to convert selectMonth format
+            // Because month is calculated from 0, the selectMonth + 1
+            String todayMonthStr = getMonthFormatForCardExpiry(todayMonth);
+            int todayMonthPostion = monthArrayList.indexOf(todayMonthStr);
+            recyclerView_month.scrollToPosition(todayMonthPostion);
+            monthAdapter.setHighlightItem(todayMonthPostion);
+            textView_month.setText(todayMonthStr);
+        }
+    }
+
+    /**
+     * Convert year to week year, for example 2016 -> 16
+     *
+     * @param year, for example 2016
+     */
+
+    public String getWeekYearFormat(int year) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, year);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yy"); // Just the year, with 2 digits
+        String weekYear = simpleDateFormat.format(calendar.getTime());
+        return weekYear;
+    }
+
+    /**
+     * Convert monthFormat for CardExpiry
+     * In order the CardExpiryDatePickerType's month format is 01,02,03.......10,11,12
+     *
+     * @param month, for example 0,1..10,11
+     */
+
+    public String getMonthFormatForCardExpiry(int month) {
+        String monthStr;
+        //  Because month is calcalated from 0, need to +1
+        if ((month + 1) / 10 == 0) {
+            monthStr = String.valueOf(0) + String.valueOf(month + 1);
+        } else {
+            monthStr = String.valueOf(month + 1);
+        }
+        return monthStr;
+    }
 
     /**
      * Convert dp to px

@@ -106,8 +106,8 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.MonthViewHol
     /**
      * get highlight item postion
      */
-    public int getHighlightItem() {
-        return mHighlightItemPosition;
+    public String getHighlightItem() {
+        return dataSource.get(mHighlightItemPosition);
     }
 
 
