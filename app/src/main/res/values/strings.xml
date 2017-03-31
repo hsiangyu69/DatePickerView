@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">CustomDatePiacker</string>
+    <string name="alert_button_cancel">Cancel</string>
+    <string name="alert_button_done">Done</string>
+    <string name="show_birthday_picker">Show birthday picker</string>
+    <string name="show_credit_card_picker">Show credit card picker</string>
 </resources>
