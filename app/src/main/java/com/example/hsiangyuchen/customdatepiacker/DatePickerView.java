@@ -7,6 +7,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -21,7 +22,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
 
 
 public class DatePickerView extends RelativeLayout {
@@ -91,10 +91,10 @@ public class DatePickerView extends RelativeLayout {
      * @param minUnixTime         date picker min date limit
      */
     public DatePickerView(Context context,
-                            int mDatePickerViewType,
-                            long selectUnixTime,
-                            long minUnixTime,
-                            long maxUnixTime) {
+                          int mDatePickerViewType,
+                          long selectUnixTime,
+                          long minUnixTime,
+                          long maxUnixTime) {
         super(context);
         this.mDatePickerViewType = mDatePickerViewType;
 
@@ -690,5 +690,17 @@ public class DatePickerView extends RelativeLayout {
         }
 
         return unixTime;
+    }
+
+    @NonNull
+    public Button getDoneButton() {
+        Button button_done = (Button) this.findViewById(R.id.button_done);
+        return button_done;
+    }
+
+    @NonNull
+    public Button getCancelButton() {
+        Button button_cancel = (Button) this.findViewById(R.id.button_cancel);
+        return button_cancel;
     }
 }

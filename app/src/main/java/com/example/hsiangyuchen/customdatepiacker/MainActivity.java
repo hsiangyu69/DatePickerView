@@ -8,8 +8,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import java.util.Calendar;
-
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -43,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Build and show alert dialog and set date picker as custom view
+     *
      * @param dataPickerType the type want to show
      */
 
@@ -53,8 +52,8 @@ public class MainActivity extends AppCompatActivity {
                 .setView(datePickerView)
                 .create();
         // Button Done
-        Button buttonDone = (Button) datePickerView.findViewById(R.id.button_done);
-        buttonDone.setOnClickListener(new View.OnClickListener() {
+        Button button_done = datePickerView.getDoneButton();
+        button_done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 long selectUnixTime = datePickerView.getSelectDateUnixTime();
@@ -64,8 +63,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Button Cancel
-        Button buttonCancel = (Button) datePickerView.findViewById(R.id.button_cancel);
-        buttonCancel.setOnClickListener(new View.OnClickListener() {
+        Button button_cancel = datePickerView.getCancelButton();
+        button_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 alertDialog.dismiss();
@@ -79,13 +78,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, 2004);
-        calendar.set(Calendar.MONTH, 11);
-
-        Log.e(TAG, String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)));
-
-
     }
 
     @Override
